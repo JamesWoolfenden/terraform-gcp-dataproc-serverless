@@ -21,7 +21,6 @@ variable "region" {
 variable "kms_key_name" {
   type        = string
   description = "CMEK key used to encrypt workload persistent disks and data; must be in the same region as the workload"
-  sensitive   = true
 
   validation {
     condition     = length(trimspace(var.kms_key_name)) > 0

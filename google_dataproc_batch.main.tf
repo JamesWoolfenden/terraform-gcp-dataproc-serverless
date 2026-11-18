@@ -27,9 +27,12 @@ resource "google_dataproc_batch" "main" {
     archive_uris  = var.spark_batch.archive_uris
   }
 
-  depends_on = [
-    google_kms_crypto_key_iam_member.dataproc_agent,
-    google_kms_crypto_key_iam_member.compute_agent,
-    google_project_iam_member.batch_sa_worker,
-  ]
+  # Create blocks on the batch's operation, which completes only when the
+  # batch finishes; the provider's default create timeout is far shorter than
+  # a typical var.ttl, so a healthy long-running batch would fail the apply.
+  timeouts {
+    create = local.batch_create_timeout
+  }
+
+  depends_on = [time_sleep.iam_propagation]
 }

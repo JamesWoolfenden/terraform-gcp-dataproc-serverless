@@ -1,0 +1,100 @@
+{
+  "category": "all",
+  "findings": [
+    {
+      "confidence": "medium",
+      "explanation": "google_dataproc_batch create waits on the batch operation, which only completes when the batch reaches a terminal state. var.ttl defaults to 3600s but no timeouts block is set, so any batch running longer than the provider's default create timeout makes apply error out and taints the resource while the job keeps running; the next apply then tries to replace it. Apply-time correctness issue (reliability is the closest principle).",
+      "file": "google_dataproc_batch.main.tf",
+      "first_seen": "2026-11-18",
+      "fix": "timeouts {\n  create = \"${tonumber(trimsuffix(var.ttl, \"s\")) + 600}s\"\n}",
+      "fixable": true,
+      "id": "HOLDEN_AI_001",
+      "last_seen": "2026-11-18",
+      "line": 1,
+      "principle": "reliability",
+      "related_resources": [
+        "variable.ttl"
+      ],
+      "remediation": "Set timeouts { create } from var.ttl plus a provisioning margin.",
+      "resource": "google_dataproc_batch.main",
+      "severity": "MEDIUM",
+      "status": "fixed",
+      "suppression_reason": null,
+      "title": "Batch create timeout is the provider default, far below var.ttl, so a healthy long batch fails the apply",
+      "unresolved_since": null
+    },
+    {
+      "confidence": "high",
+      "explanation": "Dataproc Serverless requires the workload subnet to allow ingress between its own VMs on all ports (Spark driver/executor traffic). The example creates a brand-new custom VPC with no firewall rules (HLD_GCP_093 was suppressed rather than addressed) and passes no network_tags, so the SparkPi batch would fail on apply.",
+      "file": "example/examplea/google_compute_network.tf",
+      "first_seen": "2026-11-18",
+      "fixable": false,
+      "id": "HOLDEN_AI_002",
+      "last_seen": "2026-11-18",
+      "line": 4,
+      "principle": "reliability",
+      "related_resources": [
+        "google_compute_subnetwork.workloads",
+        "module.dataproc_serverless"
+      ],
+      "remediation": "Add an intra-workload ingress firewall rule scoped by a network tag and pass that tag to the module via network_tags.",
+      "resource": "google_compute_network.private",
+      "severity": "MEDIUM",
+      "status": "fixed",
+      "suppression_reason": null,
+      "title": "Example network has no firewall rule allowing workload-to-workload traffic, so the example batch cannot run",
+      "unresolved_since": null
+    },
+    {
+      "confidence": "medium",
+      "explanation": "The batch is submitted as soon as the encrypter/decrypter grants to the Dataproc and Compute service agents and the dataproc.worker grant return. IAM changes take up to a minute or more to propagate, so the first apply can fail disk creation with a CMEK permission error; a failed batch is not retried. Apply-time correctness issue (reliability is the closest principle).",
+      "file": "google_dataproc_batch.main.tf",
+      "first_seen": "2026-11-18",
+      "fixable": false,
+      "id": "HOLDEN_AI_003",
+      "last_seen": "2026-11-18",
+      "line": 1,
+      "principle": "reliability",
+      "related_resources": [
+        "google_kms_crypto_key_iam_member.dataproc_agent",
+        "google_kms_crypto_key_iam_member.compute_agent",
+        "google_project_iam_member.batch_sa_worker",
+        "google_dataproc_session_template.main"
+      ],
+      "remediation": "Depend on a time_sleep that follows the grants.",
+      "resource": "google_dataproc_batch.main",
+      "severity": "MEDIUM",
+      "status": "fixed",
+      "suppression_reason": null,
+      "title": "CMEK batch/session template created immediately after the KMS and IAM grants, with no allowance for IAM propagation",
+      "unresolved_since": null
+    },
+    {
+      "confidence": "high",
+      "explanation": "A KMS key resource name is not secret (HLD_TF_050 exempts *_name), but sensitive = true redacts it in every plan. kms_key forces replacement of the batch (re-running the job) and the session template, so the reviewer sees a replacement driven by '(sensitive value)'.",
+      "file": "variables.tf",
+      "first_seen": "2026-11-18",
+      "fix": "Delete the line `sensitive   = true` from variable \"kms_key_name\".",
+      "fixable": true,
+      "id": "HOLDEN_AI_004",
+      "last_seen": "2026-11-18",
+      "line": 21,
+      "principle": "maintainability",
+      "related_resources": [
+        "google_dataproc_batch.main",
+        "google_dataproc_session_template.main"
+      ],
+      "remediation": "Remove sensitive = true from variable.kms_key_name.",
+      "resource": "variable.kms_key_name",
+      "severity": "LOW",
+      "status": "fixed",
+      "suppression_reason": null,
+      "title": "kms_key_name marked sensitive hides why the batch and session template are replaced in plan output",
+      "unresolved_since": null
+    }
+  ],
+  "scan_date": "2026-11-18T12:30:00Z",
+  "scan_path": ".",
+  "suggested_policies": [],
+  "suggested_suppressions": []
+}

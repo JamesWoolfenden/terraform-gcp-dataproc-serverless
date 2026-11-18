@@ -41,6 +41,7 @@ No requirements.
 | Name | Version |
 | ---- | ------- |
 | <a name="provider_google"></a> [google](#provider\_google) | n/a |
+| <a name="provider_time"></a> [time](#provider\_time) | n/a |
 
 ## Modules
 
@@ -55,6 +56,7 @@ No modules.
 | [google_kms_crypto_key_iam_member.compute_agent](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/kms_crypto_key_iam_member) | resource |
 | [google_kms_crypto_key_iam_member.dataproc_agent](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/kms_crypto_key_iam_member) | resource |
 | [google_project_iam_member.batch_sa_worker](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
+| [time_sleep.iam_propagation](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
 | [google_project.current](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/project) | data source |
 
 ## Inputs

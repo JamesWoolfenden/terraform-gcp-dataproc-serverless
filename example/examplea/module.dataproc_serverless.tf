@@ -6,6 +6,7 @@ module "dataproc_serverless" {
   kms_key_name    = google_kms_crypto_key.main.id
   subnetwork      = google_compute_subnetwork.workloads.self_link
   service_account = google_service_account.batch.email
+  network_tags    = [local.network_tag]
 
   spark_batch = {
     main_class    = "org.apache.spark.examples.SparkPi"

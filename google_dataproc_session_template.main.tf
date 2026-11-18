@@ -27,9 +27,5 @@ resource "google_dataproc_session_template" "main" {
     display_name = var.session_template.display_name
   }
 
-  depends_on = [
-    google_kms_crypto_key_iam_member.dataproc_agent,
-    google_kms_crypto_key_iam_member.compute_agent,
-    google_project_iam_member.batch_sa_worker,
-  ]
+  depends_on = [time_sleep.iam_propagation]
 }
